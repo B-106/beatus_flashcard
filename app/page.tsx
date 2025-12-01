@@ -7,7 +7,7 @@ export default async function Home() {
     <main className="p-6 text-2xl">
       My Own Flashcard 홈 화면입니다.
       <div>
-        <h1>Cards</h1>
+        <h1>var1</h1>
         <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
     </main>

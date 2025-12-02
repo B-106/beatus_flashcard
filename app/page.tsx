@@ -70,13 +70,13 @@ export default function Home() {
       {/* 입력 영역 */}
       <div className="flex flex-col gap-3 max-w-md">
         <input 
-          className="p-3 rounded text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="p-3 rounded text-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={q} 
           onChange={(e) => setQ(e.target.value)} 
           placeholder="질문 (Question)" 
         />
         <input 
-          className="p-3 rounded text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="p-3 rounded text-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={a} 
           onChange={(e) => setA(e.target.value)} 
           placeholder="답 (Answer)" 

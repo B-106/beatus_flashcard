@@ -7,6 +7,30 @@ import { User } from "@supabase/supabase-js"; // 유저 타입 가져오기
 export default function Home() {
   const [user, setUser] = useState<User | null>(null); // 로그인한 유저 정보 담을 그릇
   const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [a, setA] = useState("");
+
+  const addCard = async () => {
+    if (!user) return;
+    if (!q || !a) return alert("단어와 뜻을 모두 입력해주세요.");
+
+    const { error } = await supabase
+      .from("flashcards")
+      .insert({
+        user_id: user.id,
+        question: q,
+        answer: a,
+      });
+
+    if (error) {
+      console.error(error);
+      alert("저장 실패");
+    } else {
+      alert("단어장에 추가되었습니다!");
+      setQ(""); // 입력창 비우기
+      setA("");
+    }
+  };
 
   // 1. 앱 켜지면 로그인 상태 확인
   useEffect(() => {
@@ -19,7 +43,7 @@ export default function Home() {
 
     checkUser();
 
-    // 로그인/로그아웃 상태 변화 감지 (실시간 반영)
+    // 로그인/로그아웃 상태 변화 감지 (실시간)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -94,11 +118,33 @@ export default function Home() {
               로그아웃
             </button>
           </div>
-
-          {/* 여기에 아까 만든 카드 입력 기능이 들어가면 됩니다 */}
-          <div className="bg-gray-800 p-6 rounded-lg text-center">
-             <h3 className="text-2xl mb-4">📚 학습 대시보드 (준비중)</h3>
-             <p className="text-gray-400">이제 사용자별 DB를 연동할 차례입니다.</p>
+          <div className="bg-gray-800 p-6 rounded-lg mb-6 border border-gray-700">
+            <h3 className="text-xl font-bold mb-4 text-blue-300">📝 새 단어 추가</h3>
+            <div className="flex flex-col gap-3">
+              <input 
+                className="p-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="단어 (Question) ex: Apple"
+                value={q}
+                onChange={e => setQ(e.target.value)}
+              />
+              <input 
+                className="p-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="뜻 (Answer) ex: 사과"
+                value={a}
+                onChange={e => setA(e.target.value)}
+              />
+              <button 
+                onClick={addCard}
+                className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold text-white transition-colors mt-2"
+              >
+                추가하기
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-lg text-center border border-gray-700">
+             <h3 className="text-2xl mb-2">📊 학습 대시보드 (준비중)</h3>
+             <p className="text-gray-400">여기에 라이트너 박스 현황이 표시될 예정입니다.</p>
           </div>
         </div>
       )}

@@ -214,6 +214,17 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     if (currentBox === 1) loadCardsForBox(deckId, 1);
   };
 
+  const currentCard = cards[currentCardIndex];
+  const totalAttempts = currentCard ? (currentCard.correct_count || 0) + (currentCard.incorrect_count || 0) : 0;
+  const accuracy = totalAttempts === 0 ? 0 : Math.round(((currentCard.correct_count || 0) / totalAttempts) * 100);
+
+  let badgeColor = "bg-gray-700 text-gray-300"; // 기본 (새 카드)
+  if (totalAttempts > 0) {
+    if (accuracy >= 80) badgeColor = "bg-green-900/50 text-green-400 border border-green-500/30";
+    else if (accuracy >= 50) badgeColor = "bg-yellow-900/50 text-yellow-400 border border-yellow-500/30";
+    else badgeColor = "bg-red-900/50 text-red-400 border border-red-500/30";
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 flex">
       <main className="flex-1 p-8 flex flex-col relative">
@@ -245,6 +256,9 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
               onClick={() => setIsFlipped(true)}
               className={`cursor-pointer w-full h-96 bg-gray-800 rounded-2xl border border-gray-700 flex flex-col items-center justify-center p-10 text-center transition-all duration-300 ${isFlipped ? "border-blue-500 bg-gray-800" : "hover:border-gray-500"}`}
             >
+                <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold ${badgeColor}`}>
+                {totalAttempts === 0 ? "New ✨" : `정답률 ${accuracy}% (${totalAttempts}회 학습)`}
+                </div>
               <div className="text-gray-400 text-sm mb-4">{isFlipped ? "Answer" : "Question"}</div>
               <h2 className="text-4xl font-bold break-keep">
                 {isFlipped ? cards[currentCardIndex].answer : cards[currentCardIndex].question}

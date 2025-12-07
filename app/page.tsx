@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { Plus, MoreVertical, Trash2, Edit2, BookOpen, GripVertical } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, BookOpen, BarChart2 } from "lucide-react";
 import Link from "next/link";
 
 // 드래그 앤 드롭 관련 라이브러리 (dnd-kit)
@@ -48,7 +48,7 @@ function SortableDeckCard({ deck, activeMenuId, setActiveMenuId, deleteDeck }: a
         </div>
 
         <div className="flex items-center gap-1">
-          {/* 드래그 손잡이 (이 아이콘을 잡고 드래그해야 함) */}
+          {/* 드래그 손잡이 */}
           <button {...attributes} {...listeners} className="text-gray-600 hover:text-white p-1 cursor-grab active:cursor-grabbing">
             <GripVertical size={20} />
           </button>
@@ -273,7 +273,18 @@ export default function Home() {
           <h1 className="text-2xl font-bold">My Flashcard</h1>
           <p className="text-gray-400 text-sm">반갑습니다, {user.user_metadata.full_name}님!</p>
         </div>
-        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-white underline">로그아웃</button>
+        <div className="flex items-center gap-4">
+            <Link href="/statistics">
+              <button className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-blue-400 px-4 py-2 rounded-lg font-bold border border-gray-700 transition-colors">
+                <BarChart2 size={20} />
+                통계 보기
+              </button>
+            </Link>
+            
+            <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-white underline">
+              로그아웃
+            </button>
+          </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
@@ -299,7 +310,7 @@ export default function Home() {
               {streak} <span className="text-2xl text-gray-500">days</span>
             </div>
             <p className="text-sm text-gray-400 mt-2">
-              {streak > 0 ? "꾸준함이 재능을 이깁니다! 🔥" : "오늘 공부를 시작해서 불꽃을 피우세요!"}
+              {streak > 0 ? "불꽃을 꺼트리지 마세요! 🔥" : "오늘 공부를 시작해서 불꽃을 피우세요!"}
             </p>
           </div>
           {/* 배경 장식용 불꽃 아이콘 */}

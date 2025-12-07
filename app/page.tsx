@@ -259,7 +259,7 @@ export default function Home() {
 
 
   if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">로딩 중...</div>;
-  if (!user) return <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center"><button onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: "http://localhost:3000" } })}>구글 로그인</button></div>;
+  if (!user) return <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center"><button onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } })}>구글 로그인</button></div>;
 
   // 오답노트(고정)와 나머지(드래그가능) 분리
   const wrongNoteDeck = decks.find(d => d.is_wrong_note);

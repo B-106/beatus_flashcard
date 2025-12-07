@@ -111,7 +111,7 @@ export default function Home() {
       <div className="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
         <div>
           <h1 className="text-2xl font-bold">My Flashcard</h1>
-          <p className="text-gray-400 text-sm">반갑습니다, {user.user_metadata.full_name}님! 오늘도 힘내세요 🔥</p>
+          <p className="text-gray-400 text-sm">반갑습니다, {user.user_metadata.full_name}님!</p>
         </div>
         <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-white underline">로그아웃</button>
       </div>
@@ -189,14 +189,14 @@ export default function Home() {
             <h2 className="text-xl font-bold mb-4">새 박스 만들기</h2>
             <input 
               className="w-full bg-gray-700 p-3 rounded mb-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="박스 이름 (ex: 토익 영단어)"
+              placeholder="박스 이름 (필수)"
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
               autoFocus
             />
             <textarea 
               className="w-full bg-gray-700 p-3 rounded mb-6 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none"
-              placeholder="설명 (선택사항)"
+              placeholder="설명 (선택)"
               value={newDesc}
               onChange={e => setNewDesc(e.target.value)}
             />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Plus, MoreVertical, Trash2, Edit2, BookOpen, GripVertical } from "lucide-react";
+import Link from "next/link";
 
 // 드래그 앤 드롭 관련 라이브러리 (dnd-kit)
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -19,9 +20,8 @@ type Deck = {
   order_index: number; // 순서 저장용
 };
 
-// ---------------------------------------------------------
+
 // [컴포넌트 1] 드래그 가능한 박스 컴포넌트 (따로 분리함)
-// ---------------------------------------------------------
 function SortableDeckCard({ deck, activeMenuId, setActiveMenuId, deleteDeck }: any) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deck.id });
 
@@ -75,20 +75,24 @@ function SortableDeckCard({ deck, activeMenuId, setActiveMenuId, deleteDeck }: a
       <h3 className="text-xl font-bold mb-1 truncate">{deck.title}</h3>
       <p className="text-sm text-gray-400 line-clamp-2 h-10">{deck.description || "설명이 없습니다."}</p>
 
-      <button className="w-full mt-6 py-2 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-700 transition-colors">
-        학습 시작
-      </button>
+      <Link href={`/study/${deck.id}`} className="block w-full mt-6">
+          <button className="w-full py-2 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-700 transition-colors">학습 시작</button>
+      </Link>
     </div>
   );
 }
 
-// ---------------------------------------------------------
+
 // [메인] Home 컴포넌트
-// ---------------------------------------------------------
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [todayCount, setTodayCount] = useState(0);       // 오늘 공부한 카드 수
+  const [todayAccuracy, setTodayAccuracy] = useState(0); // 오늘 정답률
+  const [streak, setStreak] = useState(0);               // 연속 출석일
+  const [attendedDates, setAttendedDates] = useState<Set<string>>(new Set()); // 출석한 날짜들 (달력용)
 
   // 모달 & 메뉴 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,11 +110,62 @@ export default function Home() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      if (user) fetchDecks(user.id);
+      if (user) {
+        fetchDecks(user.id);
+        fetchStats(user.id); // <--- [추가] 통계 불러오기 함수 호출
+      }
       setLoading(false);
     };
     init();
   }, []);
+
+  const fetchStats = async (userId: string) => {
+    // 1. 유저의 모든 학습 로그 가져오기 (날짜 최신순)
+    const { data: logs } = await supabase
+      .from("study_logs")
+      .select("created_at, is_correct")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (!logs || logs.length === 0) return;
+
+    // --- A. 오늘 학습량 & 정답률 계산 ---
+    const todayStr = new Date().toISOString().split("T")[0]; // "2023-12-07" 형식
+    const todayLogs = logs.filter(log => log.created_at.startsWith(todayStr));
+    
+    setTodayCount(todayLogs.length);
+    
+    const correctCount = todayLogs.filter(log => log.is_correct).length;
+    setTodayAccuracy(todayLogs.length > 0 ? Math.round((correctCount / todayLogs.length) * 100) : 0);
+
+    // --- B. 캘린더 & 스트릭 계산 ---
+    // 로그에서 날짜만 뽑아서 중복 제거 (Set 사용)
+    const uniqueDates = Array.from(new Set(logs.map(log => log.created_at.split("T")[0])));
+    setAttendedDates(new Set(uniqueDates)); // 달력에 찍을 용도
+
+    // 스트릭 계산 (오늘 포함해서 과거로 연속된 날짜 세기)
+    let currentStreak = 0;
+    let checkDate = new Date(); // 오늘부터 시작
+    
+    // 만약 오늘 공부 안 했으면 어제부터 체크할지 결정
+    // (여기서는 오늘 안 했어도 어제 했으면 스트릭 유지되는 로직으로 짬)
+    const todayExists = uniqueDates.includes(todayStr);
+    if (!todayExists) {
+        // 오늘 기록이 없으면, 어제 기록이 있는지 확인. 어제도 없으면 스트릭 0.
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+      const dateString = checkDate.toISOString().split("T")[0];
+      if (uniqueDates.includes(dateString)) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1); // 하루 전으로 이동
+      } else {
+        break; // 끊기면 종료
+      }
+    }
+    setStreak(currentStreak);
+  };
 
   const fetchDecks = async (userId: string) => {
     let { data: myDecks, error } = await supabase
@@ -221,6 +276,86 @@ export default function Home() {
         <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-white underline">로그아웃</button>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        
+        {/* 1. 오늘의 학습량 카드 */}
+        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg flex flex-col justify-between">
+          <h3 className="text-gray-400 text-sm font-bold mb-2">TODAY'S LEARNING</h3>
+          <div className="flex items-end gap-2 mb-4">
+            <span className="text-5xl font-black text-white">{todayCount}</span>
+            <span className="text-gray-400 mb-2">Cards</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
+            <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${todayAccuracy}%` }}></div>
+          </div>
+          <p className="text-sm text-gray-400 text-right">정답률 <span className="text-blue-400 font-bold">{todayAccuracy}%</span></p>
+        </div>
+
+        {/* 2. 스트릭 (불꽃 아이콘) */}
+        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg flex items-center justify-between relative overflow-hidden group">
+          <div className="z-10">
+            <h3 className="text-gray-400 text-sm font-bold mb-1">CURRENT STREAK</h3>
+            <div className="text-5xl font-black text-white flex items-center gap-2">
+              {streak} <span className="text-2xl text-gray-500">days</span>
+            </div>
+            <p className="text-sm text-gray-400 mt-2">
+              {streak > 0 ? "꾸준함이 재능을 이깁니다! 🔥" : "오늘 공부를 시작해서 불꽃을 피우세요!"}
+            </p>
+          </div>
+          {/* 배경 장식용 불꽃 아이콘 */}
+          <div className={`absolute -right-6 -bottom-6 text-9xl transition-all duration-500 ${streak > 0 ? "text-orange-500/20 group-hover:text-orange-500/30" : "text-gray-700/20"}`}>
+            🔥
+          </div>
+        </div>
+
+        {/* 3. 미니 캘린더 (이번 달 출석부) */}
+        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+          <h3 className="text-gray-400 text-sm font-bold mb-4 flex justify-between">
+            <span>THIS MONTH</span>
+            <span>{new Date().getMonth() + 1}월</span>
+          </h3>
+          <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1">
+            <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {/* 달력 날짜 생성 로직 (즉석 실행) */}
+            {(() => {
+              const today = new Date();
+              const year = today.getFullYear();
+              const month = today.getMonth();
+              const firstDay = new Date(year, month, 1).getDay(); // 이번달 1일 요일
+              const daysInMonth = new Date(year, month + 1, 0).getDate(); // 이번달 마지막 날짜
+              
+              const calendarCells = [];
+              // 빈 칸 채우기
+              for (let i = 0; i < firstDay; i++) {
+                calendarCells.push(<div key={`empty-${i}`}></div>);
+              }
+              // 날짜 채우기
+              for (let d = 1; d <= daysInMonth; d++) {
+                // "YYYY-MM-DD" 포맷 만들기 (주의: 월/일이 한자리수일 때 0 붙여야 함)
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isAttended = attendedDates.has(dateStr); // 출석 여부 확인
+                const isToday = d === today.getDate();
+
+                calendarCells.push(
+                  <div 
+                    key={d} 
+                    className={`aspect-square flex items-center justify-center rounded-full text-xs font-bold relative
+                      ${isToday ? "border border-white text-white" : ""}
+                      ${isAttended ? "bg-blue-500 text-black" : "text-gray-600"}
+                    `}
+                  >
+                    {d}
+                  </div>
+                );
+              }
+              return calendarCells;
+            })()}
+          </div>
+        </div>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         
         {/* 1. 오답노트 (항상 맨 앞에 고정, 드래그 불가) */}
@@ -233,7 +368,11 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold mb-1">{wrongNoteDeck.title}</h3>
             <p className="text-sm text-gray-400 line-clamp-2 h-10">{wrongNoteDeck.description}</p>
-            <button className="w-full mt-6 py-2 rounded-lg font-bold text-sm bg-red-600 hover:bg-red-700 transition-colors">오답 복습하기</button>
+            <Link href={`/study/${wrongNoteDeck.id}`} className="block w-full mt-6">
+              <button className="w-full py-2 rounded-lg font-bold text-sm bg-red-600 hover:bg-red-700 transition-colors">
+                오답 복습하기
+              </button>
+            </Link>
           </div>
         )}
 

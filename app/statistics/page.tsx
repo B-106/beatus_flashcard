@@ -91,10 +91,10 @@ export default function StatisticsPage() {
     setLoading(false);
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center">로딩 중...</div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 flex justify-center items-center">로딩 중...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 p-8">
       {/* 헤더 */}
       <div className="flex items-center gap-4 mb-10">
         <button onClick={() => router.push("/")} className="p-2 hover:bg-gray-800 rounded-full">

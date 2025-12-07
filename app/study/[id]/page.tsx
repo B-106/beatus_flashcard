@@ -215,7 +215,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 flex">
       <main className="flex-1 p-8 flex flex-col relative">
         {/* 헤더 */}
         <div className="flex items-center gap-4 mb-8">

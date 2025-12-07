@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, BookOpen, BarChart2 } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, BookOpen, BarChart2, Settings } from "lucide-react";
 import Link from "next/link";
 
 // 드래그 앤 드롭 관련 라이브러리 (dnd-kit)
@@ -266,7 +266,7 @@ export default function Home() {
   const draggableDecks = decks.filter(d => !d.is_wrong_note);
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-8">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 p-8">
       {/* 헤더 */}
       <div className="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
         <div>
@@ -280,6 +280,11 @@ export default function Home() {
                 통계 보기
               </button>
             </Link>
+            <Link href="/settings">
+             <button className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg font-bold border border-gray-700 transition-colors" title="설정">
+               <Settings size={20} />
+             </button>
+          </Link>
             
             <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-white underline">
               로그아웃

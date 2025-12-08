@@ -338,7 +338,7 @@ export default function Home() {
                 const isAttended = attendedDates.has(dateStr);
                 const isToday = d === today.getDate();
                 calendarCells.push(
-                  <div key={d} className={`aspect-square flex items-center justify-center rounded-full text-xs font-bold relative ${isToday ? "border border-blue-500 text-blue-500" : ""} ${isAttended ? "bg-green-500 text-white" : "text-gray-400"}`}>{d}</div>
+                  <div key={d} className={`aspect-square flex items-center justify-center rounded-full text-xs font-bold relative ${isToday ? "border border-blue-500 text-blue-500" : ""} ${isAttended ? "bg-blue-500 text-white" : "text-gray-400"}`}>{d}</div>
                 );
               }
               return calendarCells;

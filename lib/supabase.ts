@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 // 1. 환경 변수 가져오기
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = "https://nsjlueyatqqlkejitylh.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zamx1ZXlhdHFxbGtlaml0bHloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1ODQxNTQsImV4cCI6MjA4MDE2MDE1NH0.uBPvD0FGTOWcRuarcpmK9WlvyXJXQdmcXiI__4EPAhc";
 
 // 2. 환경 변수가 잘 들어왔는지 검사 (이게 없으면 빨간 줄이 뜹니다)
 if (!supabaseUrl || !supabaseKey) {
